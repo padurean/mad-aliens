@@ -5,10 +5,39 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 )
 
 // World holds cities per their names.
 type World map[string]*City
+
+// String returns the textual representation of a world (implements the Stringer
+// interface).
+func (w *World) String() string {
+	if w == nil {
+		return "<nil>"
+	}
+
+	var sb strings.Builder
+	sb.WriteString("World:\n---\n")
+
+	if len(*w) == 0 {
+		sb.WriteString("All cities have been destroyed! 😱\n---")
+		return sb.String()
+	}
+
+	i := 0
+	for _, city := range *w {
+		fmt.Fprintf(&sb, "%s (aliens: %v)", city, city.Aliens)
+		if i < len(*w)-1 {
+			sb.WriteString("\n")
+		}
+		i++
+	}
+
+	sb.WriteString("\n---")
+	return sb.String()
+}
 
 // Read reads and populates the world from the specified file.
 func (w *World) Read(filePath string) error {

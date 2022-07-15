@@ -65,3 +65,16 @@ func (c *City) Parse(s string) error {
 
 	return nil
 }
+
+// Removes any neighbors that are present among the specified cities.
+func (c *City) RemoveNeighborsIn(cities map[string]struct{}) {
+	if len(cities) == 0 {
+		return
+	}
+
+	for neighbor := range c.Neighbors {
+		if _, ok := cities[neighbor]; ok {
+			delete(c.Neighbors, neighbor)
+		}
+	}
+}

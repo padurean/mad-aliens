@@ -5,11 +5,27 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"strconv"
 
 	"github.com/padurean/mad-aliens/internal/invasion"
 	"github.com/padurean/mad-aliens/internal/world"
 )
+
+var (
+	ColorReset = "\033[0m"
+	ColorGreen = "\033[32m"
+	ColorRed   = "\033[31m"
+)
+
+func init() {
+	// do not use colors on Windows as they might not work
+	if runtime.GOOS == "windows" {
+		ColorReset = ""
+		ColorGreen = ""
+		ColorRed = ""
+	}
+}
 
 type flags struct {
 	help        bool
@@ -59,6 +75,12 @@ func main() {
 		os.Exit(0)
 	}
 
+	interactiveMode := ColorRed + "🔴OFF" + ColorReset
+	if f.interactive {
+		interactiveMode = ColorGreen + "🟢ON" + ColorReset
+	}
+	fmt.Printf("Interactive mode: %s\n", interactiveMode)
+
 	worldIn := "world.txt"
 	var w world.World
 	if err := w.Read(worldIn); err != nil {
@@ -69,17 +91,19 @@ func main() {
 	onEvent := func(event string) {
 		fmt.Println(event)
 		if f.interactive {
-			fmt.Print("Press 'Enter' to continue...")
+			fmt.Print(ColorGreen + "Press 'Enter' to continue ..." + ColorReset)
 			bufio.NewReader(os.Stdin).ReadBytes('\n')
 		}
 	}
 
 	inv := invasion.New(w, n, onEvent)
-	inv.Run()
+	fmt.Println(inv.Run())
 
 	worldOut := "world_after_invasion.txt"
 	if err := inv.World.Write(worldOut); err != nil {
 		fmt.Printf("Failed to write world to file '%s': %v", worldOut, err)
 		os.Exit(3)
 	}
+
+	fmt.Println("The End. ☠️")
 }
