@@ -116,13 +116,13 @@ func (invasion *Invasion) Run() string {
 	invasion.landAliens()
 	if invasion.advance(false) {
 		return fmt.Sprintf(
-			"☑️ Invasion complete right after aliens landing!\n%s",
+			"☑️  Invasion complete right after aliens landing!\n%s",
 			invasion.String())
 	}
 
 	for {
 		if invasion.advance(true) {
-			return fmt.Sprintf("Invasion complete!\n%s", invasion.String())
+			return fmt.Sprintf("☑️  Invasion complete!\n%s", invasion.String())
 		}
 	}
 }
@@ -209,7 +209,7 @@ func (invasion *Invasion) teleportAlien(from, to *world.City) {
 	}
 
 	invasion.onEvent(fmt.Sprintf(
-		"⚡️ %s traveled   from  ➡️ %+v %v   to  ➡️ %+v %v",
+		"⚡️ %s traveled   from  ➡️  %+v %v   to  ➡️  %+v %v",
 		alien, from, from.Aliens, to, to.Aliens))
 }
 

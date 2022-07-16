@@ -82,9 +82,9 @@ func main() {
 		return
 	}
 
-	interactiveMode := ColorRed + "🔴OFF" + ColorReset
+	interactiveMode := ColorRed + "🔴 OFF" + ColorReset
 	if f.interactive {
-		interactiveMode = ColorGreen + "🟢ON" + ColorReset
+		interactiveMode = ColorGreen + "🟢 ON" + ColorReset
 	}
 	fmt.Printf("Interactive mode: %s\n", interactiveMode)
 
