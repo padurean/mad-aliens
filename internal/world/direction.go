@@ -1,7 +1,6 @@
 package world
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -38,18 +37,4 @@ func (d *Direction) Parse(str string) bool {
 	}
 
 	return ok
-}
-
-// UnmarshalText implements the standard library interface
-// encoding.TextUnmarshaler.
-func (d *Direction) UnmarshalText(text []byte) error {
-	if d.Parse(string(text)) {
-		return nil
-	}
-	return fmt.Errorf("unknown direction '%s'", text)
-}
-
-// MarshalText implements the standard library interface encoding.TextMarshaler.
-func (d Direction) MarshalText() ([]byte, error) {
-	return []byte(d.String()), nil
 }

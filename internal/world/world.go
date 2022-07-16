@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 )
@@ -61,11 +62,15 @@ func (w *World) FindGhostCities() map[string]struct{} {
 
 // Read reads and populates the world from the specified file.
 func (w *World) Read(filePath string) error {
-	file, err := os.Open(filePath)
+	file, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
 		return fmt.Errorf("failed to open input world file '%s': %v", filePath, err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(fmt.Errorf("failed to close input file %s: %w", filePath, err))
+		}
+	}()
 
 	*w = make(map[string]*City)
 
@@ -96,12 +101,17 @@ func (w *World) Read(filePath string) error {
 
 // Write writes the world to the specified file.
 func (w *World) Write(filePath string) error {
-	file, err := os.OpenFile(filePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile( //nolint:gosec
+		filepath.Clean(filePath), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf(
 			"failed to open output world file '%s': %v", filePath, err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(fmt.Errorf("failed to close output file %s: %w", filePath, err))
+		}
+	}()
 
 	orderedCities := make([]*City, 0, len(*w))
 	for _, city := range *w {
@@ -111,14 +121,17 @@ func (w *World) Write(filePath string) error {
 		return orderedCities[i].OriginalLineNumber < orderedCities[j].OriginalLineNumber
 	})
 
-	datawriter := bufio.NewWriter(file)
+	filewriter := bufio.NewWriter(file)
 	for _, city := range orderedCities {
-		_, err = datawriter.WriteString(fmt.Sprintf("%s\n", city))
+		_, err = filewriter.WriteString(fmt.Sprintf("%s\n", city))
 		if err != nil {
 			return fmt.Errorf("failed to write city '%s' to file: %v", city, err)
 		}
 	}
-	datawriter.Flush()
+
+	if err := filewriter.Flush(); err != nil {
+		return fmt.Errorf("failed to flush file writer: %v", err)
+	}
 
 	return nil
 }

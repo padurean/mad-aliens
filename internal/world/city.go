@@ -96,7 +96,7 @@ func (c *City) GetRandomNeighbor() (string, Direction) {
 	}
 
 	rand.Seed(time.Now().UnixNano())
-	randomIndex := rand.Intn(len(neighbors))
+	randomIndex := rand.Intn(len(neighbors)) //nolint:gosec
 
 	i := 0
 	for neighbor, direction := range neighbors {

@@ -12,6 +12,7 @@ import (
 	"github.com/padurean/mad-aliens/internal/world"
 )
 
+// Colors
 var (
 	ColorReset = "\033[0m"
 	ColorGreen = "\033[32m"

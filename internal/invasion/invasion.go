@@ -1,7 +1,6 @@
 package invasion
 
 import (
-	"errors"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -73,14 +72,19 @@ func New(
 	onEvent func(string),
 ) (*Invasion, error) {
 
+	var validationErrs []string
 	if len(w) == 0 {
-		return nil, errors.New("can not create an invasion on an empty world")
+		validationErrs = append(validationErrs, "world must not be empty")
 	}
 	if numberOfAliens <= 0 {
-		return nil, errors.New("can not create an invasion without aliens")
+		validationErrs = append(
+			validationErrs, "numberOfAliens must be greater than zero")
 	}
 	if onEvent == nil {
-		return nil, errors.New("can not create an invasion without onEvent callback")
+		validationErrs = append(validationErrs, "onEvent callback must not be nil")
+	}
+	if len(validationErrs) > 0 {
+		return nil, fmt.Errorf("invalid args: %s", strings.Join(validationErrs, ", "))
 	}
 
 	invasion := &Invasion{
@@ -129,7 +133,7 @@ func (invasion *Invasion) landAliens() {
 	var alienCounter int
 	for {
 		rand.Seed(time.Now().UnixNano())
-		nextTeamIndex := rand.Intn(len(alienTeams))
+		nextTeamIndex := rand.Intn(len(alienTeams)) //nolint:gosec
 		alienCounter++
 		alienTeams[nextTeamIndex] =
 			append(alienTeams[nextTeamIndex], fmt.Sprintf("👽%d", alienCounter))

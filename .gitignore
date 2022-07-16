@@ -4,14 +4,16 @@
 *.dll
 *.so
 *.dylib
-/simulation
+/invasion
+
+# Output files
 /world_after_invasion.txt
 
 # Test binary, built with `go test -c`
 *.test
 
-# Output of the go coverage tool, specifically when used with LiteIDE
+# Outputs of the go coverage tool
+.coverage
+coverage.txt
+*.cov
 *.out
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
