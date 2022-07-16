@@ -11,13 +11,10 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /build/in
 # build final alpine image
 FROM alpine:latest
 
-# arguments
+# build arguments
 ARG APP_USER=app
 ARG PROJECT_ROOT=/app/
 ARG WORLD=world.txt
-
-# install required libs
-# RUN apk update && apk --no-cache --update add ca-certificates
 
 # create app dir and user
 RUN mkdir -p ${PROJECT_ROOT} && \
