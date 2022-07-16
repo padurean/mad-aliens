@@ -19,7 +19,7 @@ var (
 )
 
 func init() {
-	// do not use colors on Windows as they might not work
+	// Do not use colors on Windows as they might not work.
 	if runtime.GOOS == "windows" {
 		ColorReset = ""
 		ColorGreen = ""
@@ -33,15 +33,21 @@ type flags struct {
 }
 
 func (f *flags) parse() {
-	flag.BoolVar(&f.help, "help", f.help, "show help")
-	flag.BoolVar(&f.interactive, "i", f.interactive, "run the invasion interactively (step by step)")
+	flag.BoolVar(&f.help, "help", f.help, "Show help.")
+	flag.BoolVar(
+		&f.interactive,
+		"i",
+		f.interactive,
+		"Run the invasion interactively, step by step.")
 	flag.Parse()
 }
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(flag.CommandLine.Output(), "Usage: invasion [OPTIONS] <number of aliens>\nOPTIONS:\n")
+		out := flag.CommandLine.Output()
+		fmt.Fprintf(out, "Usage:\n  invasion [OPTIONS] <number of aliens>\n\nOPTIONS:\n")
 		flag.PrintDefaults()
+		fmt.Fprintf(out, "\nExamples:\n  invasion 1748\n  invasion -i 12\n")
 	}
 
 	var f flags
@@ -72,7 +78,7 @@ func main() {
 
 	if n == 0 {
 		fmt.Println("Zero 👽 aliens => no invasion! 🎉")
-		os.Exit(0)
+		return
 	}
 
 	interactiveMode := ColorRed + "🔴OFF" + ColorReset
@@ -91,19 +97,27 @@ func main() {
 	onEvent := func(event string) {
 		fmt.Println(event)
 		if f.interactive {
-			fmt.Print(ColorGreen + "Press 'Enter' to continue ..." + ColorReset)
-			bufio.NewReader(os.Stdin).ReadBytes('\n')
+			fmt.Print(ColorGreen + "↵ Press 'Enter' to continue ..." + ColorReset)
+			_, err := bufio.NewReader(os.Stdin).ReadBytes('\n')
+			if err != nil {
+				fmt.Printf("Failed to read from stdin: %v", err)
+				os.Exit(3)
+			}
 		}
 	}
 
-	inv := invasion.New(w, n, onEvent)
+	inv, err := invasion.New(w, n, onEvent)
+	if err != nil {
+		fmt.Printf("Failed to create invasion: %v", err)
+		os.Exit(4)
+	}
 	fmt.Println(inv.Run())
 
 	worldOut := "world_after_invasion.txt"
 	if err := inv.World.Write(worldOut); err != nil {
 		fmt.Printf("Failed to write world to file '%s': %v", worldOut, err)
-		os.Exit(3)
+		os.Exit(5)
 	}
 
-	fmt.Println("The End. 🏁")
+	fmt.Println("🏁 The End.")
 }

@@ -30,7 +30,7 @@ func (w *World) String() string {
 	cityIcons := []string{"🌆", "🏙 ", "🌇", "🌃", "🌁", "🌉"}
 	for _, city := range *w {
 		fmt.Fprintf(
-			&sb, "%s %s 👽%v\n",
+			&sb, "%s %s %v\n",
 			cityIcons[i%len(cityIcons)], city, city.Aliens)
 		i++
 	}

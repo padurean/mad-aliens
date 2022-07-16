@@ -12,7 +12,7 @@ type City struct {
 	Name               string
 	Neighbors          map[string]Direction
 	OriginalLineNumber int
-	Aliens             []int
+	Aliens             []string
 
 	// Some neighbors might be "ghosts" - i.e. they might not actually exist.
 	// If that is the case, this field can be populated with just the real
@@ -73,6 +73,8 @@ func (c *City) Parse(s string) error {
 	return nil
 }
 
+// SetRealNeighborsFromGhosts populates this city's RealNeighbors fields with
+// only the neighbors that do not occur in the specified ghost cities list.
 func (c *City) SetRealNeighborsFromGhosts(ghostCities map[string]struct{}) {
 	c.RealNeighbors = make(map[string]Direction)
 	for name, direction := range c.Neighbors {
@@ -107,16 +109,8 @@ func (c *City) GetRandomNeighbor() (string, Direction) {
 	return "", DirectionUnknown
 }
 
-// Removes any neighbors that are present among the specified cities.
-func (c *City) RemoveNeighborsIn(cities map[string]struct{}) {
-	if len(cities) == 0 {
-		return
-	}
-
-	for neighbor := range c.Neighbors {
-		if _, ok := cities[neighbor]; ok {
-			delete(c.Neighbors, neighbor)
-			delete(c.RealNeighbors, neighbor)
-		}
-	}
+// RemoveNeighbor removes a neighbor city from this city neighbor lists.
+func (c *City) RemoveNeighbor(neighbor string) {
+	delete(c.Neighbors, neighbor)
+	delete(c.RealNeighbors, neighbor)
 }
