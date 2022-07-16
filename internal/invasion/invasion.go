@@ -18,6 +18,7 @@ type Summary struct {
 	TravelCountersPerAliens map[int]int
 	ExhaustedAliens         map[int]struct{}
 	TrappedAliensPerCity    map[string][]int
+	GhostCities             map[string]struct{}
 }
 
 // String returns the textual representation of a summary (implements the
@@ -28,14 +29,15 @@ func (s *Summary) String() string {
 	}
 
 	var sb strings.Builder
-	sb.WriteString("Summary:\n---\n")
-	fmt.Fprintf(&sb, "Destroyed cities          : %v\n", s.DestroyedCities)
-	fmt.Fprintf(&sb, "Dead aliens               : %v\n", s.DeadAliens)
-	fmt.Fprintf(&sb, "Travel counters per aliens: %v\n", s.TravelCountersPerAliens)
-	fmt.Fprintf(&sb, "Exhausted aliens          : %v\n", s.ExhaustedAliens)
-	fmt.Fprintf(&sb, "Trapped aliens per city   : %v", s.TrappedAliensPerCity)
+	sb.WriteString("📜 Summary:\n-----------\n")
+	fmt.Fprintf(&sb, "💥 Destroyed cities          : %v\n", s.DestroyedCities)
+	fmt.Fprintf(&sb, "☠️  Dead aliens               : %v\n", s.DeadAliens)
+	fmt.Fprintf(&sb, "🔂 Travel counters per aliens: %v\n", s.TravelCountersPerAliens)
+	fmt.Fprintf(&sb, "😪 Exhausted aliens          : %v\n", s.ExhaustedAliens)
+	fmt.Fprintf(&sb, "🚷 Trapped aliens per city   : %v\n", s.TrappedAliensPerCity)
+	fmt.Fprintf(&sb, "👻 Ghost cities              : %v\n", s.GhostCities)
 
-	sb.WriteString("\n---")
+	sb.WriteString("===========")
 	return sb.String()
 }
 
@@ -65,7 +67,7 @@ func (invasion *Invasion) String() string {
 
 // New creates a new invasion without starting it.
 func New(w world.World, numberOfAliens int, onEvent func(string)) *Invasion {
-	return &Invasion{
+	invasion := &Invasion{
 		NumberOfAliens: numberOfAliens,
 		World:          w,
 		Summary: &Summary{
@@ -74,24 +76,32 @@ func New(w world.World, numberOfAliens int, onEvent func(string)) *Invasion {
 			TravelCountersPerAliens: make(map[int]int),
 			ExhaustedAliens:         make(map[int]struct{}),
 			TrappedAliensPerCity:    make(map[string][]int),
+			GhostCities:             w.FindGhostCities(),
 		},
 		onEvent: onEvent,
 	}
+
+	// set real neighbors for each city
+	if len(invasion.Summary.GhostCities) > 0 {
+		for _, city := range invasion.World {
+			city.SetRealNeighborsFromGhosts(invasion.Summary.GhostCities)
+		}
+	}
+
+	return invasion
 }
 
 // Run starts and runs the invasion.
 func (invasion *Invasion) Run() string {
 	invasion.landAliens()
-	invasion.advance(false)
-	if invasion.isComplete() {
+	if invasion.advance(false) {
 		return fmt.Sprintf(
 			"Invasion complete right after aliens landing!\n%s",
 			invasion.String())
 	}
 
 	for {
-		invasion.advance(true)
-		if invasion.isComplete() {
+		if invasion.advance(true) {
 			return fmt.Sprintf("Invasion complete!\n%s", invasion.String())
 		}
 	}
@@ -118,10 +128,10 @@ func (invasion *Invasion) landAliens() {
 	}
 
 	invasion.onEvent(fmt.Sprintf(
-		"%d aliens👽 landed!\n%s", invasion.NumberOfAliens, invasion.World.String()))
+		"%d 👽 aliens landed!\n%s", invasion.NumberOfAliens, invasion.World.String()))
 }
 
-func (invasion *Invasion) advance(teleportAliens bool) {
+func (invasion *Invasion) advance(teleportAliens bool) bool {
 	for _, city := range invasion.World {
 		if len(city.Aliens) == 0 {
 			continue
@@ -135,13 +145,13 @@ func (invasion *Invasion) advance(teleportAliens bool) {
 
 		// Remove any meanwhile destroyed cities from the list of neighbors.
 		city.RemoveNeighborsIn(invasion.Summary.DestroyedCities)
-		if len(city.Neighbors) == 0 || !teleportAliens {
+		if len(city.RealNeighbors) == 0 || !teleportAliens {
 			continue
 		}
 
-		nextCity := invasion.getRandomNeighboringCity(city)
-		// Next city can be nil if the input map is inconsistent - i.e. if it has
-		// neighbor(s) list(s) that contain non-existent cities.
+		nextCityName, _ := city.GetRandomNeighbor()
+		nextCity := invasion.World[nextCityName]
+		// This should never happen.
 		if nextCity == nil {
 			continue
 		}
@@ -151,30 +161,15 @@ func (invasion *Invasion) advance(teleportAliens bool) {
 		if len(nextCity.Aliens) > 1 {
 			invasion.destroyCity(nextCity)
 		}
+
+		if invasion.isComplete() {
+			invasion.removeDestroyedNeighbors()
+			return true
+		}
 	}
 
 	invasion.removeDestroyedNeighbors()
-}
-
-// getRandomNeighboringCity picks and returns a random neighbor of the
-// specified city.
-// !NOTE: The caller must ensure that city has at least one neighbor.
-func (invasion *Invasion) getRandomNeighboringCity(city *world.City) *world.City {
-	rand.Seed(time.Now().UnixNano())
-	nextCityIndex := rand.Intn(len(city.Neighbors))
-
-	var nextCity *world.City
-
-	i := 0
-	for neighborName := range city.Neighbors {
-		if i == nextCityIndex {
-			nextCity = invasion.World[neighborName]
-			break
-		}
-		i++
-	}
-
-	return nextCity
+	return invasion.isComplete()
 }
 
 // teleportAlien "teleports" an alien from once city to another.
@@ -197,7 +192,7 @@ func (invasion *Invasion) teleportAlien(from, to *world.City) {
 	}
 
 	invasion.onEvent(fmt.Sprintf(
-		"Alien %d has been teleported from %+v (aliens: %v) to %+v (aliens: %v)",
+		"Alien %d has been teleported from { %+v 👽%v } ➡️ to { %+v 👽%v }",
 		alien, from, from.Aliens, to, to.Aliens))
 }
 
@@ -211,7 +206,7 @@ func (invasion *Invasion) destroyCity(city *world.City) {
 	aliensNames := make([]string, 0, len(city.Aliens))
 	for _, alien := range city.Aliens {
 		invasion.Summary.DeadAliens[alien] = struct{}{}
-		aliensNames = append(aliensNames, fmt.Sprintf("alien %d", alien))
+		aliensNames = append(aliensNames, fmt.Sprintf("👽%d", alien))
 	}
 	invasion.emitCityDestructionEvent(city.Name, aliensNames)
 }
@@ -225,7 +220,7 @@ func (invasion *Invasion) emitCityDestructionEvent(city string, aliens []string)
 		aliensJoined += " and " + aliens[len(aliens)-1]
 	}
 	invasion.onEvent(fmt.Sprintf(
-		"%s has been destroyed by %s!", city, aliensJoined))
+		"💥 %s has been destroyed by %s!", city, aliensJoined))
 }
 
 // removeDestroyedNeighbors removes any destroyed cities from the neighbor(s)
@@ -235,7 +230,7 @@ func (invasion *Invasion) emitCityDestructionEvent(city string, aliens []string)
 func (invasion *Invasion) removeDestroyedNeighbors() {
 	for _, city := range invasion.World {
 		city.RemoveNeighborsIn(invasion.Summary.DestroyedCities)
-		if len(city.Neighbors) == 0 && len(city.Aliens) > 0 {
+		if len(city.RealNeighbors) == 0 && len(city.Aliens) > 0 {
 			invasion.Summary.TrappedAliensPerCity[city.Name] = append(
 				invasion.Summary.TrappedAliensPerCity[city.Name], city.Aliens...)
 		}

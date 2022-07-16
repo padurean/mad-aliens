@@ -2,7 +2,9 @@ package world
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 // City holds a city name and it's neighboring cities names per directions.
@@ -11,6 +13,11 @@ type City struct {
 	Neighbors          map[string]Direction
 	OriginalLineNumber int
 	Aliens             []int
+
+	// Some neighbors might be "ghosts" - i.e. they might not actually exist.
+	// If that is the case, this field can be populated with just the real
+	// neighbors.
+	RealNeighbors map[string]Direction
 }
 
 // String returns the textual representation of a city (implements the Stringer
@@ -66,6 +73,40 @@ func (c *City) Parse(s string) error {
 	return nil
 }
 
+func (c *City) SetRealNeighborsFromGhosts(ghostCities map[string]struct{}) {
+	c.RealNeighbors = make(map[string]Direction)
+	for name, direction := range c.Neighbors {
+		if _, ok := ghostCities[name]; !ok {
+			c.RealNeighbors[name] = direction
+		}
+	}
+}
+
+// GetRandomNeighbor returns a random (real) neighbor.
+// !NOTE: The caller must ensure that city has at least one neighbor.
+func (c *City) GetRandomNeighbor() (string, Direction) {
+	neighbors := c.RealNeighbors
+	if len(neighbors) == 0 {
+		neighbors = c.Neighbors
+	}
+	if len(neighbors) == 0 {
+		return "", DirectionUnknown
+	}
+
+	rand.Seed(time.Now().UnixNano())
+	randomIndex := rand.Intn(len(neighbors))
+
+	i := 0
+	for neighbor, direction := range neighbors {
+		if i == randomIndex {
+			return neighbor, direction
+		}
+		i++
+	}
+
+	return "", DirectionUnknown
+}
+
 // Removes any neighbors that are present among the specified cities.
 func (c *City) RemoveNeighborsIn(cities map[string]struct{}) {
 	if len(cities) == 0 {
@@ -75,6 +116,7 @@ func (c *City) RemoveNeighborsIn(cities map[string]struct{}) {
 	for neighbor := range c.Neighbors {
 		if _, ok := cities[neighbor]; ok {
 			delete(c.Neighbors, neighbor)
+			delete(c.RealNeighbors, neighbor)
 		}
 	}
 }

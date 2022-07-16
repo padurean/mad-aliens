@@ -59,19 +59,19 @@ func main() {
 
 	args := flag.Args()
 	if len(args) < 1 {
-		fmt.Printf("Please specify the number of aliens👽: ")
+		fmt.Printf("Please specify the number of 👽 aliens: ")
 		_, err = fmt.Scanf("%d", &n)
 	} else {
 		n, err = strconv.Atoi(args[0])
 	}
 
 	if err != nil {
-		fmt.Printf("Failed to read the number of aliens👽: %v\n", err)
+		fmt.Printf("Failed to read the number of 👽 aliens: %v\n", err)
 		os.Exit(1)
 	}
 
 	if n == 0 {
-		fmt.Println("Zero aliens👽 => no invasion! 🎉")
+		fmt.Println("Zero 👽 aliens => no invasion! 🎉")
 		os.Exit(0)
 	}
 
@@ -105,5 +105,5 @@ func main() {
 		os.Exit(3)
 	}
 
-	fmt.Println("The End. ☠️")
+	fmt.Println("The End. 🏁")
 }

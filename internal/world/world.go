@@ -19,24 +19,44 @@ func (w *World) String() string {
 	}
 
 	var sb strings.Builder
-	sb.WriteString("World:\n---\n")
+	sb.WriteString("🌐 World:\n-----------\n")
 
 	if len(*w) == 0 {
-		sb.WriteString("All cities have been destroyed! 😱\n---")
+		sb.WriteString("All cities have been destroyed! 😱\n===========")
 		return sb.String()
 	}
 
 	i := 0
+	cityIcons := []string{"🌆", "🏙 ", "🌇", "🌃", "🌁", "🌉"}
 	for _, city := range *w {
-		fmt.Fprintf(&sb, "%s (aliens: %v)", city, city.Aliens)
-		if i < len(*w)-1 {
-			sb.WriteString("\n")
-		}
+		fmt.Fprintf(
+			&sb, "%s %s 👽%v\n",
+			cityIcons[i%len(cityIcons)], city, city.Aliens)
 		i++
 	}
 
-	sb.WriteString("\n---")
+	sb.WriteString("===========")
 	return sb.String()
+}
+
+// FindGhostCities returns any city names which appear in neighbor list(s) of
+// this world's cities, but which don't actually exist in this world.
+// This can happen, for example, if this world is inconsistently defined.
+func (w *World) FindGhostCities() map[string]struct{} {
+	if w == nil {
+		return nil
+	}
+
+	ghostCities := make(map[string]struct{})
+	for _, city := range *w {
+		for neighbor := range city.Neighbors {
+			if _, ok := (*w)[neighbor]; !ok {
+				ghostCities[neighbor] = struct{}{}
+			}
+		}
+	}
+
+	return ghostCities
 }
 
 // Read reads and populates the world from the specified file.
