@@ -2,7 +2,6 @@ package invasion
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
 	"strings"
 	"time"
@@ -99,18 +98,23 @@ func (invasion *Invasion) Run() string {
 }
 
 func (invasion *Invasion) landAliens() {
-	numberOfLoops :=
-		int(math.Ceil(float64(invasion.NumberOfAliens) / float64(len(invasion.World))))
+	alienTeams := make([][]int, len(invasion.World))
 
-	var alien int
-	for i := 0; i < numberOfLoops; i++ {
-		for _, city := range invasion.World {
-			alien++
-			city.Aliens = append(city.Aliens, alien)
-			if alien == invasion.NumberOfAliens {
-				break
-			}
+	var alienCounter int
+	for {
+		rand.Seed(time.Now().UnixNano())
+		nextTeamIndex := rand.Intn(len(alienTeams))
+		alienCounter++
+		alienTeams[nextTeamIndex] = append(alienTeams[nextTeamIndex], alienCounter)
+		if alienCounter == invasion.NumberOfAliens {
+			break
 		}
+	}
+
+	i := 0
+	for _, city := range invasion.World {
+		city.Aliens = alienTeams[i]
+		i++
 	}
 
 	invasion.onEvent(fmt.Sprintf(
