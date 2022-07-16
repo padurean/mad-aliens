@@ -1,37 +1,38 @@
-# Mad Aliens
+# :alien::alien::alien: Mad Aliens
 
-## Alien invasion simulation
+Simulating an alien invasion using the [Go]((https://go.dev)) programming language.
 
-Mad​ ​aliens​ ​are​ ​about​ ​to​ ​invade​ ​the​ ​earth​ ​and​ ​you​ ​are​ ​tasked​ ​with​ ​simulating​ ​the invasion.
+The requirements can be found [here](./requirements.md).
 
-You​ ​are​ ​given​ ​a​ ​map​ ​containing​ ​the​ ​names​ ​of​ ​cities​ ​in​ ​the​ ​non-existent​ ​world​ ​of X.​ ​The​ ​map​ ​is​ ​in​ ​a​ ​file,​ ​with​ ​one​ ​city​ ​per​ ​line.​ ​The​ ​city​ ​name​ ​is​ ​first, followed​ ​by​ ​1-4​ ​directions​ ​(north,​ ​south,​ ​east,​ ​or​ ​west).​ ​Each​ ​one​ ​represents​ ​a road​ ​to​ ​another​ ​city​ ​that​ ​lies​ ​in​ ​that​ ​direction. For​ ​example:
+## Prerequisites
 
-```text
-Foo​ ​north=Bar​ ​west=Baz​ ​south=Qu-ux
-Bar​ ​south=Foo​ ​west=Bee
-```
+### Required
 
-The​ ​city​ ​and​ ​each​ ​of​ ​the​ ​pairs​ ​are​ ​separated​ ​by​ ​a​ ​single​ ​space,​ ​and​ ​the
-directions​ ​are​ ​separated​ ​from​ ​their​ ​respective​ ​cities​ ​with​ ​an​ ​equals​ ​(`=`)​ ​sign. You​ ​should​ ​create​ _​N​_ ​aliens,​ ​where​ _​N​_ ​is​ ​specified​ ​as​ ​a​ ​command-line​ ​argument.
+- [Go](https://go.dev)
 
-These​ ​aliens​ ​start​ ​out​ ​at​ ​random​ ​places​ ​on​ ​the​ ​map,​ ​and​ ​wander​ ​around​ ​randomly, following​ ​links.​ ​Each​ ​iteration,​ ​the​ ​aliens​ ​can​ ​travel​ ​in​ ​any​ ​of​ ​the​ ​directions
-leading​ ​out​ ​of​ ​a​ ​city.​ ​In​ ​our​ ​example​ ​above,​ ​an​ ​alien​ ​that​ ​starts​ ​at​ _​Foo​_ can​ ​go north​ ​to​ _​Bar_,​ ​west​ ​to​ _​Baz_,​ ​or​ ​south​ ​to​ _​Qu-ux_.
+### Optional
 
-When​ ​two​ ​aliens​ ​end​ ​up​ ​in​ ​the​ ​same​ ​place,​ ​they​ ​fight,​ ​and​ ​in​ ​the​ ​process​ ​kill each​ ​other​ ​and​ ​destroy​ ​the​ ​city.​ ​When​ ​a​ ​city​ ​is​ ​destroyed,​ ​it​ ​is​ ​removed​ ​from the​ ​map,​ ​and​ ​so​ ​are​ ​any​ ​roads​ ​that​ ​lead​ ​into​ ​or​ ​out​ ​of​ ​it.
-In​ ​our​ ​example​ ​above,​ ​if​ _​Bar​_ ​were​ ​destroyed​ ​the​ ​map​ ​would​ ​now​ ​be​ ​something like:
+- [golangci-lint](https://golangci-lint.run)
+- [make](https://www.cs.swarthmore.edu/~newhall/unixhelp/howto_makefiles.html)
+- [Docker](https://www.docker.com)
 
-```text
-Foo​ ​west=Baz​ ​south=Qu-ux
-```
+## Run, Lint, Test and more
 
-Once​ ​a​ ​city​ ​is​ ​destroyed,​ ​aliens​ ​can​ ​no​ ​longer​ ​travel​ ​to​ ​or​ ​through​ ​it.​ ​This
-may​ ​lead​ ​to​ ​aliens​ ​getting​ ​"trapped".
+Run it using `go run`, passing the number of aliens:
 
-You​ ​should​ ​create​ ​a​ ​program​ ​that​ ​reads​ ​in​ ​the​ ​world​ ​map,​ ​creates​ _​N​_ ​aliens,​ ​and unleashes​ ​them.​ ​The​ ​program​ ​should​ ​run​ ​until​ ​all​ ​the​ ​aliens​ ​have​ ​been destroyed, ​or​ ​each​ ​alien​ ​has​ ​moved​ ​at​ ​least​ ​10,000​ ​times.​ ​When​ ​two​ ​aliens fight, ​print​ ​out​ ​a​ ​message​ ​like:
-> `Bar​ ​has​ ​been​ ​destroyed​ ​by​ ​alien​ ​10​ ​and​ ​alien​ ​34!`
+`go run ./cmd/invasion 5`
 
-(If​ ​you​ ​want​ ​to​ ​give​ ​them​ ​names,​ ​you​ ​may,​ ​but​ ​it​ ​is​ ​not​ ​required.)​
+or to run it interactively, step by step, also pass the `-i` flag:
 
-​Once​ ​the program​ ​has​ ​finished,​ ​it​ ​should​ ​print​ ​out​ ​whatever​ ​is​ ​left​ ​of​ ​the​ ​world​ ​in​ ​the same​ ​format​ ​as​ ​the​ ​input​ ​file.
+`go run ./cmd/invasion -i 12`
 
-:bulb: Feel​ ​free​ ​to​ ​make​ ​assumptions​ ​(for​ ​example,​ ​that​ ​the​ ​city​ ​names​ ​will​ ​never contain​ ​numeric​ ​characters),​ ​but​ ​please​ ​add​ ​comments​ ​or​ ​assertions​ ​describing the​ ​assumptions​ ​you​ ​are​ ​making.
+:exclamation: The world is read from the [world.txt](./world.txt) file and what's left of it after the invasion simulation is written to [world_after_invasion.txt](./world_after_invasion.txt).
+
+:bulb: A [Makefile](./Makefile) is also provided for convenience. Please have a look at it for all the available targets, among which:
+
+- ***make run_dev***
+- ***make lint*** (:exclamation: requires [golangci-lint](https://golangci-lint.run) to be installed)
+- ***make test***
+- ***make coverage-report***
+
+:bulb: A [Dockerfile](./Dockerfile) is provided for running it with [Docker](https://www.docker.com) and some convenience make targets like ***make build_docker_image***. To run it with Docker: `docker run padurean/mad-aliens 10`

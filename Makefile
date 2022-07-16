@@ -6,7 +6,7 @@ VERSION ?= devbuild
 COMMIT ?= $(shell git rev-parse HEAD|head -c 7)
 BUILT_AT = $(shell date +%s)
 BIN = "./invasion"
-ARGS ?= 5
+ARGS ?= -i 5
 COVERPROFILE = "coverage.txt"
 COMMON_GO_TEST_FLAGS = -count=1 -failfast
 
@@ -85,4 +85,3 @@ build_docker_image:
 
 push_docker_image:
 	@docker push padurean/mad-aliens --all-tags
-
