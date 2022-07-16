@@ -1,8 +1,9 @@
 #!/bin/bash
 
-set -e # exit if a command fails
+set -e
 
-# skip /cmd/
+# Skip the following packages/directories:
+# /cmd/
 echo "Get list of project pkgs, skipping /cmd/"
 # NOTE: if more than one path will be added, they must be sepparated with \|
 PKG_LIST=$(go list ./... | grep -v '/cmd/')
@@ -14,15 +15,15 @@ go mod tidy -v
 echo "Run formating ..."
 go fmt ./...
 
-# Remove the coverage files directory
+# Remove the directory containing the coverage output files
 if [ -d "$COVERAGE_DIR" ]; then rm -Rf "$COVERAGE_DIR"; fi
 
-# run race by default
+# Test with -race flag by default
 
 RACEFLAG="-race"
 COVERMODE="atomic"
 
-# script race on CI
+# Skip -race checks on CI
 SKIPRACEFLAG=$1
 if [ -n "$SKIPRACEFLAG" ]; then
     RACEFLAG=""
@@ -36,11 +37,10 @@ echo "Running tests and code coverage ..."
 # Create the coverage files directory
 mkdir -p "$COVERAGE_DIR";
 
-# Create a coverage file for each package
-# test minim coverage
+# Required minimum coverage coverage
 MINCOVERAGE=75
 
-# stop tests at first test fail
+# Stop tests at first test fail
 TFAILMARKER="FAIL:"
 REGEXNOTFAILMARKER=".*no test files.*"
 REGEXCOVERAGE="^coverage:"
@@ -94,19 +94,19 @@ do
 done
 
 
-# global code coverage
+# Global code coverage
 pcoverage=$(go tool cover -func="${COVERAGE_DIR}"/coverage.cov | grep 'total:' | sed -E "s/^total:.*\(statements\)[[:space:]]*([0-9]*\.[0-9]+)\%.*/\1/g")
 echo "coverage: $pcoverage% of project"
 
-
-if [ $(echo ${pcoverage%%.*}) -lt $MINCOVERAGE ] ; then
-    echo ""
-    echo "🚨 Test coverage of project is $pcoverage%"
-    echo "FAIL: min coverage is $MINCOVERAGE%"
-    echo ""
-    exit 12
-else
+# To enforce a minimum coverage for the project, uncomment this if:
+# if [ $(echo ${pcoverage%%.*}) -lt $MINCOVERAGE ] ; then
+#     echo ""
+#     echo "🚨 Test coverage of project is $pcoverage%"
+#     echo "FAIL: min coverage is $MINCOVERAGE%"
+#     echo ""
+#     exit 12
+# else
     echo ""
     echo "🟢 Test coverage of project is $pcoverage%"
     echo ""
-fi
+# fi
