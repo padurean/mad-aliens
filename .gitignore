@@ -17,3 +17,6 @@
 coverage.txt
 *.cov
 *.out
+
+# IDE dirs and files
+/.vscode
