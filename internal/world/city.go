@@ -109,7 +109,7 @@ func (c *City) GetRandomNeighbor() (string, Direction) {
 	return "", DirectionUnknown
 }
 
-// RemoveNeighbor removes a neighbor city from this city neighbor lists.
+// RemoveNeighbor removes a neighbor city from this city's neighbor list.
 func (c *City) RemoveNeighbor(neighbor string) {
 	delete(c.Neighbors, neighbor)
 	delete(c.RealNeighbors, neighbor)

@@ -235,9 +235,10 @@ func (invasion *Invasion) destroyCity(city *world.City) {
 	}
 	// !NOTE: if the world map is guaranteed to be defined in a consistent manner
 	// (meaning that for each and every neighboring cities X and Y
-	// X appears in the list of Y's neighbors vice versa), then the above removal
-	// of neighbor could be made quicker by iterating only over the destroyed
-	// city's neighbors instead of iterating over all the cities, as follows:
+	// X appears in the list of Y's neighbors AND vice versa), then the above
+	// removal of neighbor could be made quicker by iterating only over the
+	// destroyed city's neighbors instead of iterating over all the cities,
+	// as follows:
 	// for neighbor := range city.RealNeighbors {
 	// 	invasion.World[neighbor].RemoveNeighbor(city.Name)
 	// }
