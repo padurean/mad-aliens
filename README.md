@@ -41,7 +41,7 @@ or to run it interactively, step by step, also pass the `-i` flag:
 
 The code is structured as follows:
 
-- [cmd/invasion/](./cmd/invasion/main.go) is the main package containing just the [main.go](/cmd/invasion/main.go) file. It's code parses the CLI flag and argument, reads and parse the world from the [world.txt](./world.txt) file, creates and runs a new invasion and then writes what's lef of the world to a [world_after_invasion.txt] file. When creating the invasion, it also passes an `onEvent` callback to it which prints any events (basically informative strings) to the console.
+- [cmd/invasion/](./cmd/invasion/main.go) is the main package containing just the [main.go](/cmd/invasion/main.go) file. It's code parses the CLI flag and argument, reads and parses the world from the [world.txt](./world.txt) file, creates and runs a new invasion and then writes what's left of the world to a [world_after_invasion.txt] file. When creating the invasion, it also passes an `onEvent` callback to it which prints any events (basically informative strings) to the console.
 
 - [internal/world](./internal/world/) package contains structs and methods related to the world (map):
   - a custom [`World`](./internal/world/world.go) type definition (for a map holding the cities per their names) with convenience methods like `String`, `Read` and `Write` (from/to file) and also a more exotic one `FindGhostCities`:ghost:
